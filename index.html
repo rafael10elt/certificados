@@ -28,7 +28,7 @@
             box-shadow: 0 0 5px rgba(37, 99, 235, 0.8), 0 0 10px rgba(37, 99, 235, 0.6);
         }
         .status-btn {
-            cursor: pointer;
+            cursor: default;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -42,14 +42,14 @@
             color: #10B981;
         }
         .status-btn[data-status="true"]:hover {
-            background-color: rgba(16, 185, 129, 0.4);
+            background-color: rgba(16, 185, 129, 0.2);
         }
         .status-btn[data-status="false"] {
             background-color: rgba(239, 68, 68, 0.2);
             color: #EF4444;
         }
         .status-btn[data-status="false"]:hover {
-            background-color: rgba(239, 68, 68, 0.4);
+            background-color: rgba(239, 68, 68, 0.2);
         }
         .action-btn {
             background: transparent;
@@ -202,11 +202,11 @@
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-300">${cert.curso}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-300">${formatDate(cert.data_emissao)}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-center">
-                        <button class="status-btn" data-id="${cert.id}" data-status="${cert.status}" title="Alterar status">
+                        <div class="status-btn" data-id="${cert.id}" data-status="${cert.status}">
                             ${cert.status 
                                 ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>' 
                                 : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>'}
-                        </button>
+                        </div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
                        <div class="flex items-center justify-center gap-2">
@@ -268,12 +268,6 @@
                 editForm.curso.value = certData.curso;
                 editForm.data_emissao.value = certData.data_emissao;
                 editModal.classList.remove('hidden');
-            }
-
-            if (button.classList.contains('status-btn')) {
-                const currentStatus = button.dataset.status === 'true';
-                const { error } = await db.from('certificados').update({ status: !currentStatus }).eq('id', id);
-                if (error) console.error("Erro ao atualizar status:", error.message);
             }
         });
 
