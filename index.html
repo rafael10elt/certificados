@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumitechia - Gerenciador de Certificados</title>
-    <link rel="icon" href="LogoLumi.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,42 +12,6 @@
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #0d1117;
-        }
-        :root {
-            --primary-blue: #0a192f;
-            --accent-orange: #ff6b35;
-            --electric-blue: #00d4ff;
-            --white: #ffffff;
-            --light-gray: #f0f6ff;
-            --dark-overlay: rgba(10, 25, 47, 0.9);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-        }
-         .logo-futurista {
-            display: flex;
-            align-items: center;
-            font-family: 'Orbitron', monospace;
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--white);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .logo-symbol {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--dark-overlay), var(--dark-overlay));
-            border-radius: 10px;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        @keyframes glow {
-            from { box-shadow: 0 0 20px var(--accent-orange); }
-            to { box-shadow: 0 0 30px var(--electric-blue), 0 0 40px var(--electric-blue); }
         }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
@@ -105,10 +68,7 @@
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         <header class="flex items-center gap-4 mb-10">
-            <div class="logo-futurista">
-                <div class="logo-symbol">
-                <img src="LogoLumi.png" alt="Logo Lumitech" style="width: 38px; height: 38px; object-fit: contain; position: absolute; left: 6px; top: 6px; z-index: 2; pointer-events: none;" />
-               </div>
+            <svg class="w-10 h-10 text-blue-400 glow-text" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.53L19.5 8.5V15.5L12 19.47L4.5 15.5V8.5L12 4.53Z" fill="currentColor"/><path d="M12 14L15 15.5V12.5L12 11L9 12.5V15.5L12 14Z" fill="currentColor" fill-opacity="0.6"/></svg>
             <h1 class="text-3xl sm:text-4xl font-bold font-orbitron glow-text text-white">Lumitechia</h1>
         </header>
 
@@ -117,6 +77,7 @@
             <div class="lg:col-span-2">
                 <div class="glass-effect p-6 rounded-lg shadow-2xl">
                     <h2 class="text-2xl font-semibold mb-5 text-blue-300 font-orbitron">Novo Registro</h2>
+                    <p class="text-sm text-slate-400 mb-4">Esta é uma página de demonstração. Um certificado de exemplo será enviado para o e-mail cadastrado.</p>
                     <form id="addCertificateForm" class="space-y-4">
                         <input type="text" name="nome" required placeholder="Nome do Aluno" class="mt-1 block w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         <input type="email" name="email" required placeholder="Email do Aluno" class="mt-1 block w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" title="Por favor, insira um endereço de e-mail válido.">
@@ -182,6 +143,14 @@
         </div>
     </div>
 
+    <!-- Notificação de Sucesso -->
+    <div id="successNotification" class="fixed bottom-10 right-10 z-50 transition-all duration-500 ease-in-out opacity-0 transform translate-y-10">
+        <div class="glass-effect bg-green-900/50 border border-green-500 text-white px-5 py-3 rounded-lg relative shadow-lg flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>Registro adicionado com sucesso!</span>
+        </div>
+    </div>
+
     <!-- Módulo do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
@@ -199,6 +168,14 @@
         const deleteModal = document.getElementById('deleteModal');
         const cancelDeleteBtn = document.getElementById('cancelDelete');
         const confirmDeleteBtn = document.getElementById('confirmDelete');
+        const successNotification = document.getElementById('successNotification');
+
+        function showSuccessNotification() {
+            successNotification.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => {
+                successNotification.classList.add('opacity-0', 'translate-y-10');
+            }, 3000);
+        }
 
         function formatDate(isoDate) {
             if (!isoDate) return 'N/A';
@@ -268,6 +245,7 @@
                 console.error("Erro ao adicionar certificado:", error.message);
             } else {
                 addForm.reset();
+                showSuccessNotification();
             }
         });
 
