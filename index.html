@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Lumitechia - Gerenciador de Certificados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,7 +91,15 @@
             <!-- Coluna da Tabela -->
             <div class="lg:col-span-3">
                 <div class="glass-effect p-6 rounded-lg shadow-2xl">
-                    <h2 class="text-2xl font-semibold mb-5 text-blue-300 font-orbitron">Certificados Emitidos</h2>
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-2xl font-semibold text-blue-300 font-orbitron">Certificados Emitidos</h2>
+                        <button id="refreshButton" class="action-btn text-slate-400 hover:text-blue-400" title="Atualizar lista">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                            </svg>
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full">
                             <thead class="border-b border-slate-700">
@@ -169,6 +177,7 @@
         const cancelDeleteBtn = document.getElementById('cancelDelete');
         const confirmDeleteBtn = document.getElementById('confirmDelete');
         const successNotification = document.getElementById('successNotification');
+        const refreshButton = document.getElementById('refreshButton');
 
         function showSuccessNotification() {
             successNotification.classList.remove('opacity-0', 'translate-y-10');
@@ -225,6 +234,7 @@
         }
 
         async function fetchCertificates() {
+            certificatesList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Atualizando...</td></tr>`;
             const { data, error } = await db.from('certificados').select('*').order('created_at', { ascending: false });
             if (error) {
                 console.error("Erro ao buscar certificados:", error.message);
@@ -304,6 +314,8 @@
                 deleteModal.classList.add('hidden');
             }
         });
+        
+        refreshButton.addEventListener('click', fetchCertificates);
 
         async function main() {
              await fetchCertificates();
