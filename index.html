@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumitechia - Gerenciador de Certificados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -106,7 +106,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Aluno</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Curso</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Emissão</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Emitido em</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Ações</th>
                                 </tr>
@@ -159,15 +159,20 @@
         </div>
     </div>
 
-    <!-- Módulo do Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
-        const SUPABASE_URL = 'https://zngtbmwacrvlqzknzgvm.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_UuPLULriM3w4GjjHX8u7Lw_MUXZhshk';
+        // --- NocoDB Configuration ---
+        const NOCODB_URL = 'https://lumitechia-nocodb.aeenwc.easypanel.host';
+        const API_TOKEN = '3w6jCF_D4pXQ6ozjHXZlJL5mbnSNlKVWht_PpoP9';
+        const PROJECT_NAME = 'Portfolio';
+        const TABLE_NAME = 'Certificado';
+        const API_ENDPOINT = `${NOCODB_URL}/api/v1/db/data/noco/${PROJECT_NAME}/${TABLE_NAME}`;
 
-        const { createClient } = supabase;
-        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const headers = {
+            'Content-Type': 'application/json',
+            'xc-token': API_TOKEN
+        };
 
+        // --- UI Elements ---
         const certificatesList = document.getElementById('certificatesList');
         const addForm = document.getElementById('addCertificateForm');
         const editModal = document.getElementById('editModal');
@@ -179,6 +184,7 @@
         const successNotification = document.getElementById('successNotification');
         const refreshButton = document.getElementById('refreshButton');
 
+        // --- Utility Functions ---
         function showSuccessNotification() {
             successNotification.classList.remove('opacity-0', 'translate-y-10');
             setTimeout(() => {
@@ -188,11 +194,11 @@
 
         function formatDate(isoDate) {
             if (!isoDate) return 'N/A';
-            const date = new Date(isoDate + 'T00:00:00Z');
-            date.setUTCDate(date.getUTCDate() + 1);
-            return date.toLocaleDateString('pt-BR');
+            const date = new Date(isoDate);
+            return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date);
         }
 
+        // --- Render Function ---
         function renderCertificates(certs) {
             certificatesList.innerHTML = '';
             if (!certs || certs.length === 0) {
@@ -203,26 +209,27 @@
             certs.forEach(cert => {
                 const row = document.createElement('tr');
                 row.className = "border-b border-slate-800 hover:bg-slate-800/50 transition-colors";
+                // FIX: Use PascalCase for property names (cert.Nome, cert.Email, etc.)
                 row.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm font-medium text-white">${cert.nome}</div>
-                        <div class="text-xs text-slate-400">${cert.email}</div>
+                        <div class="text-sm font-medium text-white">${cert.Nome}</div>
+                        <div class="text-xs text-slate-400">${cert.Email}</div>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-300">${cert.curso}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-300">${cert.Curso}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-300">${formatDate(cert.data_emissao)}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-center">
-                        <div class="status-btn" data-id="${cert.id}" data-status="${cert.status}">
-                            ${cert.status 
+                        <div class="status-btn" data-status="${!!cert.Status}">
+                            ${!!cert.Status 
                                 ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>' 
                                 : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>'}
                         </div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
                        <div class="flex items-center justify-center gap-2">
-                            <button class="action-btn edit-btn text-blue-400" data-id="${cert.id}" title="Editar">
+                            <button class="action-btn edit-btn text-blue-400" data-id="${cert.Id}" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V12h2.293z"/></svg>
                             </button>
-                            <button class="action-btn delete-btn text-red-400" data-id="${cert.id}" title="Apagar">
+                            <button class="action-btn delete-btn text-red-400" data-id="${cert.Id}" title="Apagar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>
                             </button>
                        </div>
@@ -233,33 +240,95 @@
             });
         }
 
+        // --- API Functions (CRUD) ---
         async function fetchCertificates() {
             certificatesList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Atualizando...</td></tr>`;
-            const { data, error } = await db.from('certificados').select('*').order('created_at', { ascending: false });
-            if (error) {
-                console.error("Erro ao buscar certificados:", error.message);
-                certificatesList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Falha ao carregar dados. Verifique suas permissões (RLS) no Supabase.</td></tr>`;
-            } else {
-                renderCertificates(data);
+            try {
+                const response = await fetch(`${API_ENDPOINT}?sort=-CreatedAt`, { headers });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                renderCertificates(data.list);
+            } catch (error) {
+                console.error("Erro ao buscar certificados:", error);
+                certificatesList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Falha ao carregar dados. Verifique a URL e o Token da API.</td></tr>`;
             }
         }
         
         addForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(addForm);
-            const certificateData = Object.fromEntries(formData.entries());
-            certificateData.status = false;
+            // FIX: Create object with PascalCase keys to match NocoDB API
+            const certificateData = {
+                Nome: formData.get('nome'),
+                Email: formData.get('email'),
+                Curso: formData.get('curso'),
+                Data_emissao: formData.get('data_emissao'),
+                Status: false
+            };
 
-            const { error } = await db.from('certificados').insert([certificateData]);
-            if (error) {
-                console.error("Erro ao adicionar certificado:", error.message);
-            } else {
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(certificateData)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 addForm.reset();
                 showSuccessNotification();
+                fetchCertificates();
+            } catch (error) {
+                console.error("Erro ao adicionar certificado:", error);
+                alert("Falha ao adicionar registro.");
+            }
+        });
+        
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(editForm);
+            const id = formData.get('id');
+            // FIX: Create object with PascalCase keys for the update
+            const updateData = {
+                Nome: formData.get('nome'),
+                Email: formData.get('email'),
+                Curso: formData.get('curso'),
+                Data_emissao: formData.get('data_emissao'),
+            };
+            
+            try {
+                const response = await fetch(`${API_ENDPOINT}/${id}`, {
+                    method: 'PATCH',
+                    headers: headers,
+                    body: JSON.stringify(updateData)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                editModal.classList.add('hidden');
+                fetchCertificates();
+            } catch (error) {
+                console.error("Erro ao atualizar:", error);
+                alert("Falha ao atualizar registro.");
             }
         });
 
-        certificatesList.addEventListener('click', async (e) => {
+        confirmDeleteBtn.addEventListener('click', async () => {
+            const id = confirmDeleteBtn.dataset.id;
+            if (id) {
+                try {
+                    const response = await fetch(`${API_ENDPOINT}/${id}`, {
+                        method: 'DELETE',
+                        headers: headers
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    deleteModal.classList.add('hidden');
+                    fetchCertificates();
+                } catch (error) {
+                     console.error("Erro ao apagar:", error);
+                     alert("Falha ao apagar registro.");
+                }
+            }
+        });
+
+        // --- Event Listeners for UI ---
+        certificatesList.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
             
@@ -272,61 +341,22 @@
 
             if (button.classList.contains('edit-btn')) {
                 const certData = JSON.parse(button.dataset.cert);
-                editForm.id.value = certData.id;
-                editForm.nome.value = certData.nome;
-                editForm.email.value = certData.email;
-                editForm.curso.value = certData.curso;
-                editForm.data_emissao.value = certData.data_emissao;
+                // FIX: Use PascalCase to populate the edit form
+                editForm.id.value = certData.Id;
+                editForm.nome.value = certData.Nome;
+                editForm.email.value = certData.Email;
+                editForm.curso.value = certData.Curso;
+                editForm.data_emissao.value = certData.data_emissao.slice(0, 10);
                 editModal.classList.remove('hidden');
             }
         });
 
-        editForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(editForm);
-            const id = formData.get('id');
-            const updateData = {
-                nome: formData.get('nome'),
-                email: formData.get('email'),
-                curso: formData.get('curso'),
-                data_emissao: formData.get('data_emissao'),
-            };
-            const { error } = await db.from('certificados').update(updateData).eq('id', id);
-            if(error) {
-                console.error("Erro ao atualizar:", error.message);
-            } else {
-                editModal.classList.add('hidden');
-            }
-        });
         cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
-
-        cancelDeleteBtn.addEventListener('click', () => {
-            deleteModal.classList.add('hidden');
-        });
-
-        confirmDeleteBtn.addEventListener('click', async () => {
-            const id = confirmDeleteBtn.dataset.id;
-            if (id) {
-                const { error } = await db.from('certificados').delete().eq('id', id);
-                if (error) {
-                    console.error("Erro ao apagar:", error.message);
-                }
-                deleteModal.classList.add('hidden');
-            }
-        });
-        
+        cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.add('hidden'));
         refreshButton.addEventListener('click', fetchCertificates);
 
-        async function main() {
-             await fetchCertificates();
-            db.channel('public:certificados')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'certificados' }, payload => {
-                    fetchCertificates();
-                })
-                .subscribe();
-        }
-
-        main();
+        // --- Initial Load ---
+        fetchCertificates();
     </script>
 </body>
 </html>
