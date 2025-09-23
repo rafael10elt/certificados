@@ -13,6 +13,44 @@
             font-family: 'Roboto', sans-serif;
             background-color: #0d1117;
         }
+        :root {
+            --primary-blue: #0a192f;
+            --accent-orange: #ff6b35;
+            --electric-blue: #00d4ff;
+            --white: #ffffff;
+            --light-gray: #f0f6ff;
+            --dark-overlay: rgba(10, 25, 47, 0.9);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+        }
+         .logo-futurista {
+            display: flex;
+            align-items: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .logo-symbol {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--dark-overlay), var(--dark-overlay));
+            border-radius: 10px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px var(--accent-orange); }
+            to { box-shadow: 0 0 30px var(--electric-blue), 0 0 40px var(--electric-blue); }
+        }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
         }
@@ -68,7 +106,9 @@
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         <header class="flex items-center gap-4 mb-10">
-            <svg class="w-10 h-10 text-blue-400 glow-text" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.53L19.5 8.5V15.5L12 19.47L4.5 15.5V8.5L12 4.53Z" fill="currentColor"/><path d="M12 14L15 15.5V12.5L12 11L9 12.5V15.5L12 14Z" fill="currentColor" fill-opacity="0.6"/></svg>
+            <div class="logo-symbol">
+                <img src="LogoLumi.png" alt="Logo Lumitech" style="width: 38px; height: 38px; object-fit: contain; position: absolute; left: 6px; top: 6px; z-index: 2; pointer-events: none;" />
+               </div>
             <h1 class="text-3xl sm:text-4xl font-bold font-orbitron glow-text text-white">Lumitechia</h1>
         </header>
 
@@ -106,7 +146,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Aluno</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Curso</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Emitido em</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Emissão</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Ações</th>
                                 </tr>
@@ -194,8 +234,9 @@
 
         function formatDate(isoDate) {
             if (!isoDate) return 'N/A';
-            const date = new Date(isoDate);
-            return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date);
+            // FIX: Use noon UTC to prevent timezone shifting the date
+            const date = new Date(isoDate.slice(0, 10) + 'T12:00:00Z');
+            return new Intl.DateTimeFormat('pt-BR').format(date);
         }
 
         // --- Render Function ---
@@ -209,7 +250,6 @@
             certs.forEach(cert => {
                 const row = document.createElement('tr');
                 row.className = "border-b border-slate-800 hover:bg-slate-800/50 transition-colors";
-                // FIX: Use PascalCase for property names (cert.Nome, cert.Email, etc.)
                 row.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap">
                         <div class="text-sm font-medium text-white">${cert.Nome}</div>
@@ -226,6 +266,13 @@
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
                        <div class="flex items-center justify-center gap-2">
+                            ${!!cert.Status ? `
+                            <button class="action-btn resend-btn text-yellow-400" data-id="${cert.Id}" title="Reenviar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                                </svg>
+                            </button>
+                            ` : ''}
                             <button class="action-btn edit-btn text-blue-400" data-id="${cert.Id}" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V12h2.293z"/></svg>
                             </button>
@@ -257,12 +304,15 @@
         addForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(addForm);
-            // FIX: Create object with PascalCase keys to match NocoDB API
+            // FIX: Ensure date is sent in a robust format
+            const rawDate = formData.get('data_emissao');
+            const utcDate = new Date(rawDate + 'T12:00:00Z');
+
             const certificateData = {
                 Nome: formData.get('nome'),
                 Email: formData.get('email'),
                 Curso: formData.get('curso'),
-                Data_emissao: formData.get('data_emissao'),
+                data_emissao: utcDate.toISOString(),
                 Status: false
             };
 
@@ -286,12 +336,15 @@
             e.preventDefault();
             const formData = new FormData(editForm);
             const id = formData.get('id');
-            // FIX: Create object with PascalCase keys for the update
+            // FIX: Ensure date is sent in a robust format
+            const rawDate = formData.get('data_emissao');
+            const utcDate = new Date(rawDate + 'T12:00:00Z');
+
             const updateData = {
                 Nome: formData.get('nome'),
                 Email: formData.get('email'),
                 Curso: formData.get('curso'),
-                Data_emissao: formData.get('data_emissao'),
+                data_emissao: utcDate.toISOString(),
             };
             
             try {
@@ -328,7 +381,7 @@
         });
 
         // --- Event Listeners for UI ---
-        certificatesList.addEventListener('click', (e) => {
+        certificatesList.addEventListener('click', async (e) => {
             const button = e.target.closest('button');
             if (!button) return;
             
@@ -341,13 +394,27 @@
 
             if (button.classList.contains('edit-btn')) {
                 const certData = JSON.parse(button.dataset.cert);
-                // FIX: Use PascalCase to populate the edit form
                 editForm.id.value = certData.Id;
                 editForm.nome.value = certData.Nome;
                 editForm.email.value = certData.Email;
                 editForm.curso.value = certData.Curso;
                 editForm.data_emissao.value = certData.data_emissao.slice(0, 10);
                 editModal.classList.remove('hidden');
+            }
+
+            if (button.classList.contains('resend-btn')) {
+                try {
+                    const response = await fetch(`${API_ENDPOINT}/${id}`, {
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify({ Status: false })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    fetchCertificates();
+                } catch (error) {
+                    console.error("Erro ao marcar para reenvio:", error);
+                    alert("Falha ao marcar para reenvio.");
+                }
             }
         });
 
