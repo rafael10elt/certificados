@@ -202,11 +202,13 @@
 
     <script type="module">
         // --- NocoDB Configuration ---
-        const NOCODB_URL = 'https://lumitechia-nocodb.aeenwc.easypanel.host';
-        const API_TOKEN = '3w6jCF_D4pXQ6ozjHXZlJL5mbnSNlKVWht_PpoP9';
+        
+        const NocoDB_BaseURL = 'https://lumitechia-nocodb.aeenwc.easypanel.host'; 
+        const API_URL = '/.netlify/functions/api';
+        const API_TOKEN = null; 
         const PROJECT_NAME = 'Portfolio';
         const TABLE_NAME = 'Certificado';
-        const API_ENDPOINT = `${NOCODB_URL}/api/v1/db/data/noco/${PROJECT_NAME}/${TABLE_NAME}`;
+        const API_ENDPOINT = `${NocoDB_BaseURL}/api/v1/db/data/noco/${PROJECT_NAME}/${TABLE_NAME}`;
 
         const headers = {
             'Content-Type': 'application/json',
